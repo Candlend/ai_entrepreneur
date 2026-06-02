@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "skills": {
+    "baoyu-youtube-transcript": {
+      "source": "jimliu/baoyu-skills",
+      "sourceType": "github",
+      "skillPath": "skills/baoyu-youtube-transcript/SKILL.md",
+      "computedHash": "e39b39f19d681ef05e3d8e7fc6eabbbc0a9260f4512a5bb51fbb04b1e56c8664"
+    },
+    "bilibili-subtitle": {
+      "source": "hamsterider-m/bilibili-subtitle",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "ae4b211f861b1277889153ddc7faf1860eda74c772470883173196fd969b41f5"
+    },
+    "xiaohongshu-ops": {
+      "source": "Xiangyu-CAS/xiaohongshu-ops-skill",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "8e9943edb09426112b599c97aa235dd7715037019ee89d2390b4f20897e59a01"
+    },
+    "yt-dlp": {
+      "source": "lwmxiaobei/yt-dlp-skill",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "e00cfa7889c5a27c49cbb42a4b42086fe58a324002d566095b1f56b32f36c3b9"
+    }
+  }
+}
