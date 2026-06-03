@@ -1,36 +1,45 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AI穿搭助手 MVP
 
-## Getting Started
+AI智能穿搭推荐平台
 
-First, run the development server:
+## ✨ 功能特点
+
+- 📸 **智能分析**：AI识别身材、肤色和个人风格
+- 👗 **穿搭推荐**：专业搭配建议，展现最佳风采
+- 🎨 **色彩方案**：个性化配色，提升整体气质
+- 📱 **移动端优化**：完美适配手机和平板设备
+
+## 🛠 技术栈
+
+- **前端框架**: Next.js 15 + React 19 + TypeScript
+- **样式**: Tailwind CSS v4
+- **文件上传**: react-dropzone
+
+## 🚀 快速开始
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+访问 http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🎯 当前状态
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 已实现
+- ✅ 图片上传（拖拽）
+- ✅ AI风格分析（模拟）
+- ✅ 穿搭推荐生成
+- ✅ 色彩方案展示
+- ✅ 响应式UI设计
+- ✅ 构建测试通过
 
-## Learn More
+### 待完善
+- ⏳ Claude Vision API集成
+- ⏳ 真实穿搭数据库
+- ⏳ 购物链接推荐
+- ⏳ 用户风格记忆
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**状态**：核心功能完成，演示版本就绪
