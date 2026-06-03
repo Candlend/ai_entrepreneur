@@ -1,36 +1,47 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 宠物健康助手 MVP
 
-## Getting Started
+AI智能宠物健康管理平台
 
-First, run the development server:
+## ✨ 功能特点
+
+- 🏥 **AI症状分析**：智能分析宠物症状，提供初步健康评估
+- 💊 **健康建议**：根据症状提供专业护理和就医建议
+- 📋 **健康记录**：完整的宠物健康档案管理
+- 📱 **移动端优化**：完美适配手机和平板设备
+- 🎨 **精美设计**：温暖的琥珀色主题
+
+## 🛠 技术栈
+
+- **前端框架**: Next.js 15 + React 19 + TypeScript
+- **样式**: Tailwind CSS v4
+- **AI分析**: 模拟智能分析算法
+
+## 🚀 快速开始
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+访问 http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🎯 当前状态
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 已实现
+- ✅ 宠物症状输入表单
+- ✅ AI症状分析（模拟）
+- ✅ 健康建议生成
+- ✅ 健康记录展示
+- ✅ 响应式UI设计
+- ✅ 移动端优化
+- ✅ 构建测试通过
 
-## Learn More
+### 待完善
+- ⏳ Claude API实际集成
+- ⏳ 医院推荐功能
+- ⏳ 宠物档案管理
+- ⏳ 数据持久化
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**状态**：核心功能完成，演示版本就绪
