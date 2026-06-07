@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 interface VocalAnalysis {
   pitch: number;
@@ -21,17 +21,50 @@ interface Exercise {
   benefits: string[];
 }
 
-interface LessonProgress {
-  totalLessons: number;
-  completedLessons: number;
-  totalPracticeTime: number;
-  averageScore: number;
+interface Recording {
+  id: string;
+  name: string;
+  date: string;
+  duration: string;
+  score: number;
 }
 
+interface CheckIn {
+  date: string;
+  minutes: number;
+  exercises: number;
+}
+
+interface PKBattle {
+  id: string;
+  opponent: string;
+  song: string;
+  status: 'ongoing' | 'won' | 'lost';
+  myScore: number;
+  opponentScore: number;
+  endTime: string;
+}
+
+type ViewType = 'home' | 'practice' | 'analysis' | 'share' | 'checkin' | 'pk' | 'settings';
+
 export default function Home() {
-  const [view, setView] = useState<'home' | 'practice' | 'analysis' | 'lessons'>('home');
+  const [view, setView] = useState<ViewType>('home');
   const [recording, setRecording] = useState(false);
   const [hasRecording, setHasRecording] = useState(false);
+  const [recordings, setRecordings] = useState<Recording[]>([]);
+  const [currentRecording, setCurrentRecording] = useState<Recording | null>(null);
+  const [playing, setPlaying] = useState(false);
+  const [playProgress, setPlayProgress] = useState(0);
+  const [checkIns, setCheckIns] = useState<CheckIn[]>([]);
+  const [todayPracticed, setTodayPracticed] = useState(false);
+  const [streak, setStreak] = useState(7);
+  const [pkBattles, setPKBattles] = useState<PKBattle[]>([]);
+  const [pitchData, setPitchData] = useState<number[]>([]);
+  const [apiEnabled, setApiEnabled] = useState(false);
+  const [apiProvider, setApiProvider] = useState('');
+  const recordingTimer = useRef<NodeJS.Timeout | null>(null);
+  const playTimer = useRef<NodeJS.Timeout | null>(null);
+  const pitchTimer = useRef<NodeJS.Timeout | null>(null);
 
   const mockAnalysis: VocalAnalysis = {
     pitch: 85,
@@ -81,19 +114,157 @@ export default function Home() {
     }
   ];
 
-  const mockProgress: LessonProgress = {
-    totalLessons: 24,
-    completedLessons: 15,
-    totalPracticeTime: 780,
-    averageScore: 82
+  // Generate mock recordings
+  const generateRecordings = () => {
+    const mockRecordings: Recording[] = [
+      {
+        id: '1',
+        name: '音阶练习 - 2026-06-07',
+        date: '2026-06-07 09:30',
+        duration: '3:25',
+        score: 85
+      },
+      {
+        id: '2',
+        name: '告白气球 - 2026-06-06',
+        date: '2026-06-06 14:20',
+        duration: '4:12',
+        score: 78
+      },
+      {
+        id: '3',
+        name: '呼吸控制 - 2026-06-05',
+        date: '2026-06-05 10:15',
+        duration: '2:48',
+        score: 82
+      }
+    ];
+    setRecordings(mockRecordings);
   };
+
+  // Generate check-in data
+  const generateCheckIns = () => {
+    const mockCheckIns: CheckIn[] = [
+      { date: '2026-06-07', minutes: 25, exercises: 3 },
+      { date: '2026-06-06', minutes: 30, exercises: 4 },
+      { date: '2026-06-05', minutes: 20, exercises: 2 },
+      { date: '2026-06-04', minutes: 35, exercises: 5 },
+      { date: '2026-06-03', minutes: 15, exercises: 2 },
+      { date: '2026-06-02', minutes: 28, exercises: 3 },
+      { date: '2026-06-01', minutes: 22, exercises: 3 }
+    ];
+    setCheckIns(mockCheckIns);
+  };
+
+  // Generate PK battles
+  const generatePKBattles = () => {
+    const mockBattles: PKBattle[] = [
+      {
+        id: '1',
+        opponent: '小明',
+        song: '告白气球',
+        status: 'ongoing',
+        myScore: 82,
+        opponentScore: 78,
+        endTime: '2026-06-07 20:00'
+      },
+      {
+        id: '2',
+        opponent: '小红',
+        song: '演员',
+        status: 'won',
+        myScore: 88,
+        opponentScore: 85,
+        endTime: '2026-06-06 18:00'
+      },
+      {
+        id: '3',
+        opponent: '小刚',
+        song: '稻香',
+        status: 'lost',
+        myScore: 75,
+        opponentScore: 82,
+        endTime: '2026-06-05 16:30'
+      }
+    ];
+    setPKBattles(mockBattles);
+  };
+
+  // Real-time pitch detection simulation
+  useEffect(() => {
+    if (recording) {
+      pitchTimer.current = setInterval(() => {
+        setPitchData(prev => {
+          const newData = [...prev, 50 + Math.random() * 50];
+          return newData.slice(-20);
+        });
+      }, 200);
+    } else {
+      if (pitchTimer.current) {
+        clearInterval(pitchTimer.current);
+      }
+      setPitchData([]);
+    }
+    return () => {
+      if (pitchTimer.current) clearInterval(pitchTimer.current);
+    };
+  }, [recording]);
 
   const startRecording = () => {
     setRecording(true);
-    setTimeout(() => {
+    recordingTimer.current = setTimeout(() => {
       setRecording(false);
       setHasRecording(true);
-    }, 3000);
+      const newRecording: Recording = {
+        id: Date.now().toString(),
+        name: `录音 - ${new Date().toLocaleString('zh-CN')}`,
+        date: new Date().toLocaleString('zh-CN'),
+        duration: '3:25',
+        score: 80 + Math.floor(Math.random() * 15)
+      };
+      setRecordings(prev => [newRecording, ...prev]);
+      setCurrentRecording(newRecording);
+    }, 5000);
+  };
+
+  const playRecording = (recording: Recording) => {
+    if (playing && currentRecording?.id === recording.id) {
+      setPlaying(false);
+      if (playTimer.current) clearInterval(playTimer.current);
+      setPlayProgress(0);
+    } else {
+      setCurrentRecording(recording);
+      setPlaying(true);
+      setPlayProgress(0);
+      playTimer.current = setInterval(() => {
+        setPlayProgress(prev => {
+          if (prev >= 100) {
+            setPlaying(false);
+            if (playTimer.current) clearInterval(playTimer.current);
+            return 0;
+          }
+          return prev + 2;
+        });
+      }, 100);
+    }
+  };
+
+  const checkInToday = () => {
+    if (!todayPracticed) {
+      const today = new Date().toISOString().split('T')[0];
+      const newCheckIn: CheckIn = {
+        date: today,
+        minutes: 25,
+        exercises: 3
+      };
+      setCheckIns(prev => [newCheckIn, ...prev]);
+      setTodayPracticed(true);
+      setStreak(prev => prev + 1);
+    }
+  };
+
+  const shareRecording = (platform: string) => {
+    alert(`正在分享到${platform}...`);
   };
 
   const getScoreColor = (score: number) => {
@@ -121,6 +292,30 @@ export default function Home() {
     }
   };
 
+  const getPKStatusColor = (status: string) => {
+    switch (status) {
+      case 'ongoing':
+        return 'bg-blue-100 text-blue-700';
+      case 'won':
+        return 'bg-green-100 text-green-700';
+      case 'lost':
+        return 'bg-red-100 text-red-700';
+      default:
+        return 'bg-gray-100 text-gray-700';
+    }
+  };
+
+  const getPKStatusText = (status: string) => {
+    switch (status) {
+      case 'ongoing':
+        return '进行中';
+      case 'won':
+        return '胜利';
+      case 'lost':
+        return '失败';
+    }
+  };
+
   return (
     <main className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 py-4 sm:py-8 px-3 sm:px-4">
       <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6">
@@ -137,52 +332,45 @@ export default function Home() {
           <p className="mt-2 text-sm sm:text-base text-gray-600">AI智能分析 · 专业指导 · 科学训练</p>
         </div>
 
-        {/* 导航 */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-2 border border-gray-100">
-          <div className="grid grid-cols-4 gap-2">
-            <button
-              onClick={() => setView('home')}
-              className={`py-3 px-2 rounded-xl font-semibold text-sm transition-all ${
-                view === 'home'
-                  ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-md'
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
-            >
-              🏠 首页
-            </button>
-            <button
-              onClick={() => setView('practice')}
-              className={`py-3 px-2 rounded-xl font-semibold text-sm transition-all ${
-                view === 'practice'
-                  ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-md'
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
-            >
-              🎤 练习
-            </button>
-            <button
-              onClick={() => setView('analysis')}
-              className={`py-3 px-2 rounded-xl font-semibold text-sm transition-all ${
-                view === 'analysis'
-                  ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-md'
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
-            >
-              📊 分析
-            </button>
-            <button
-              onClick={() => setView('lessons')}
-              className={`py-3 px-2 rounded-xl font-semibold text-sm transition-all ${
-                view === 'lessons'
-                  ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-md'
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
-            >
-              📚 课程
-            </button>
+        {/* 导航标签 */}
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-2 border border-gray-100 overflow-x-auto">
+          <div className="flex gap-2 min-w-max">
+            {[
+              { id: 'home' as ViewType, label: '🏠 首页' },
+              { id: 'practice' as ViewType, label: '🎤 练习' },
+              { id: 'analysis' as ViewType, label: '📊 分析' },
+              { id: 'share' as ViewType, label: '📤 分享' },
+              { id: 'checkin' as ViewType, label: '📅 打卡' },
+              { id: 'pk' as ViewType, label: '⚔️ PK' },
+              { id: 'settings' as ViewType, label: '⚙️ 设置' }
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => {
+                  setView(tab.id);
+                  if (tab.id === 'share' && recordings.length === 0) {
+                    generateRecordings();
+                  }
+                  if (tab.id === 'checkin' && checkIns.length === 0) {
+                    generateCheckIns();
+                  }
+                  if (tab.id === 'pk' && pkBattles.length === 0) {
+                    generatePKBattles();
+                  }
+                }}
+                className={`py-3 px-4 rounded-xl font-semibold text-xs sm:text-sm transition-all whitespace-nowrap ${
+                  view === tab.id
+                    ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-md'
+                    : 'text-gray-600 hover:bg-gray-100'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
         </div>
 
+        {/* 首页视图 */}
         {view === 'home' && (
           <>
             {/* 学习进度 */}
@@ -191,54 +379,52 @@ export default function Home() {
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-4">
                 <div className="text-center">
-                  <p className="text-xs text-gray-500 mb-1">完成课程</p>
-                  <p className="text-2xl font-bold text-indigo-600">{mockProgress.completedLessons}/{mockProgress.totalLessons}</p>
+                  <p className="text-xs text-gray-500 mb-1">完成练习</p>
+                  <p className="text-2xl font-bold text-indigo-600">15/24</p>
                 </div>
                 <div className="text-center">
                   <p className="text-xs text-gray-500 mb-1">练习时长</p>
-                  <p className="text-2xl font-bold text-purple-600">{mockProgress.totalPracticeTime}分</p>
+                  <p className="text-2xl font-bold text-purple-600">780分</p>
                 </div>
                 <div className="text-center">
                   <p className="text-xs text-gray-500 mb-1">平均得分</p>
-                  <p className="text-2xl font-bold text-pink-600">{mockProgress.averageScore}分</p>
+                  <p className="text-2xl font-bold text-pink-600">82分</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-xs text-gray-500 mb-1">连续练习</p>
-                  <p className="text-2xl font-bold text-orange-600">12天</p>
+                  <p className="text-xs text-gray-500 mb-1">连续打卡</p>
+                  <p className="text-2xl font-bold text-orange-600">{streak}天</p>
                 </div>
               </div>
 
               <div className="bg-gray-100 rounded-full h-4 overflow-hidden">
                 <div
                   className="h-full bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full transition-all"
-                  style={{ width: `${(mockProgress.completedLessons / mockProgress.totalLessons) * 100}%` }}
+                  style={{ width: '62.5%' }}
                 ></div>
               </div>
-              <p className="text-xs text-gray-500 mt-2 text-center">
-                已完成 {Math.round((mockProgress.completedLessons / mockProgress.totalLessons) * 100)}%
-              </p>
+              <p className="text-xs text-gray-500 mt-2 text-center">已完成 62.5%</p>
             </div>
 
             {/* 功能卡片 */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
               <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-md p-4 border border-gray-100">
                 <div className="text-3xl mb-2">🎯</div>
-                <h3 className="font-bold text-gray-900 mb-1">AI实时分析</h3>
-                <p className="text-sm text-gray-600">实时检测音准、节奏、音色</p>
+                <h3 className="font-bold text-gray-900 mb-1">实时音准检测</h3>
+                <p className="text-sm text-gray-600">AI实时分析音准变化</p>
               </div>
               <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-md p-4 border border-gray-100">
-                <div className="text-3xl mb-2">📖</div>
-                <h3 className="font-bold text-gray-900 mb-1">专业课程</h3>
-                <p className="text-sm text-gray-600">系统化声乐训练课程</p>
+                <div className="text-3xl mb-2">📤</div>
+                <h3 className="font-bold text-gray-900 mb-1">作品分享</h3>
+                <p className="text-sm text-gray-600">分享录音到社交平台</p>
               </div>
               <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-md p-4 border border-gray-100">
-                <div className="text-3xl mb-2">💪</div>
-                <h3 className="font-bold text-gray-900 mb-1">个性化训练</h3>
-                <p className="text-sm text-gray-600">根据你的水平定制练习</p>
+                <div className="text-3xl mb-2">⚔️</div>
+                <h3 className="font-bold text-gray-900 mb-1">PK对战</h3>
+                <p className="text-sm text-gray-600">与好友一起唱歌比拼</p>
               </div>
             </div>
 
-            {/* 今日推荐 */}
+            {/* 今日推荐练习 */}
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-4 sm:p-6 border border-gray-100">
               <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">🌟 今日推荐练习</h2>
 
@@ -258,7 +444,10 @@ export default function Home() {
                       </span>
                     </div>
                     <p className="text-sm text-gray-700 mb-3">{exercise.description}</p>
-                    <button className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 active:scale-95">
+                    <button
+                      onClick={() => setView('practice')}
+                      className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 active:scale-95"
+                    >
                       开始练习
                     </button>
                   </div>
@@ -268,6 +457,7 @@ export default function Home() {
           </>
         )}
 
+        {/* 练习视图 */}
         {view === 'practice' && (
           <div className="space-y-4">
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-4 sm:p-6 border border-gray-100">
@@ -285,23 +475,40 @@ export default function Home() {
                 </div>
 
                 {recording ? (
-                  <div className="text-center">
+                  <div className="text-center mb-4">
                     <p className="text-xl font-bold text-gray-900 mb-2">录音中...</p>
                     <p className="text-sm text-gray-600">AI正在实时分析您的声音</p>
                   </div>
                 ) : hasRecording ? (
-                  <div className="text-center">
+                  <div className="text-center mb-4">
                     <p className="text-xl font-bold text-gray-900 mb-2">录音完成</p>
                     <p className="text-sm text-gray-600">查看分析结果或重新录制</p>
                   </div>
                 ) : (
-                  <div className="text-center">
+                  <div className="text-center mb-4">
                     <p className="text-xl font-bold text-gray-900 mb-2">准备开始</p>
                     <p className="text-sm text-gray-600">点击下方按钮开始录音练习</p>
                   </div>
                 )}
 
-                <div className="flex gap-3 mt-6">
+                {/* 实时音准可视化 */}
+                {recording && pitchData.length > 0 && (
+                  <div className="w-full bg-gray-100 rounded-xl p-4 mb-4">
+                    <p className="text-sm font-semibold text-gray-700 mb-2">🎯 实时音准检测</p>
+                    <div className="h-24 flex items-end justify-between gap-1">
+                      {pitchData.map((pitch, index) => (
+                        <div
+                          key={index}
+                          className="flex-1 bg-gradient-to-t from-indigo-500 to-purple-600 rounded-t transition-all"
+                          style={{ height: `${pitch}%` }}
+                        ></div>
+                      ))}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2 text-center">音准: {pitchData[pitchData.length - 1]?.toFixed(0)}%</p>
+                  </div>
+                )}
+
+                <div className="flex gap-3">
                   {!recording && !hasRecording && (
                     <button
                       onClick={startRecording}
@@ -319,7 +526,10 @@ export default function Home() {
                         查看分析
                       </button>
                       <button
-                        onClick={() => setHasRecording(false)}
+                        onClick={() => {
+                          setHasRecording(false);
+                          setCurrentRecording(null);
+                        }}
                         className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-3 px-6 rounded-xl transition-all duration-200"
                       >
                         重新录制
@@ -340,50 +550,30 @@ export default function Home() {
               </div>
             </div>
 
+            {/* 练习曲目 */}
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-4 sm:p-6 border border-gray-100">
               <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">🎵 练习曲目</h2>
 
               <div className="space-y-3">
-                <div className="p-4 bg-gray-50 rounded-xl border border-gray-200 hover:border-indigo-300 transition-all cursor-pointer">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-bold text-gray-900">告白气球</h3>
-                      <p className="text-xs text-gray-600">周杰伦 · 流行</p>
+                {['告白气球', '稻香', '演员'].map((song, idx) => (
+                  <div key={idx} className="p-4 bg-gray-50 rounded-xl border border-gray-200 hover:border-indigo-300 transition-all cursor-pointer">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="font-bold text-gray-900">{song}</h3>
+                        <p className="text-xs text-gray-600">流行 · 中等难度</p>
+                      </div>
+                      <button className="w-10 h-10 bg-indigo-500 hover:bg-indigo-600 rounded-full flex items-center justify-center text-white transition-all">
+                        ▶
+                      </button>
                     </div>
-                    <button className="w-10 h-10 bg-indigo-500 hover:bg-indigo-600 rounded-full flex items-center justify-center text-white transition-all">
-                      ▶
-                    </button>
                   </div>
-                </div>
-
-                <div className="p-4 bg-gray-50 rounded-xl border border-gray-200 hover:border-indigo-300 transition-all cursor-pointer">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-bold text-gray-900">稻香</h3>
-                      <p className="text-xs text-gray-600">周杰伦 · 流行</p>
-                    </div>
-                    <button className="w-10 h-10 bg-indigo-500 hover:bg-indigo-600 rounded-full flex items-center justify-center text-white transition-all">
-                      ▶
-                    </button>
-                  </div>
-                </div>
-
-                <div className="p-4 bg-gray-50 rounded-xl border border-gray-200 hover:border-indigo-300 transition-all cursor-pointer">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-bold text-gray-900">演员</h3>
-                      <p className="text-xs text-gray-600">薛之谦 · 抒情</p>
-                    </div>
-                    <button className="w-10 h-10 bg-indigo-500 hover:bg-indigo-600 rounded-full flex items-center justify-center text-white transition-all">
-                      ▶
-                    </button>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
           </div>
         )}
 
+        {/* 分析视图 */}
         {view === 'analysis' && (
           <div className="space-y-4">
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-4 sm:p-6 border border-gray-100">
@@ -454,9 +644,6 @@ export default function Home() {
                     <div>
                       <h4 className="font-bold text-gray-900 mb-1">气息控制需加强</h4>
                       <p className="text-sm text-gray-700 mb-2">建议增加腹式呼吸训练，延长持音时间</p>
-                      <button className="text-sm text-indigo-600 font-semibold hover:text-indigo-700">
-                        查看呼吸训练课程 →
-                      </button>
                     </div>
                   </div>
                 </div>
@@ -469,9 +656,6 @@ export default function Home() {
                     <div>
                       <h4 className="font-bold text-gray-900 mb-1">音色有提升空间</h4>
                       <p className="text-sm text-gray-700 mb-2">尝试多做共鸣腔体训练，让声音更加圆润饱满</p>
-                      <button className="text-sm text-indigo-600 font-semibold hover:text-indigo-700">
-                        查看音色训练课程 →
-                      </button>
                     </div>
                   </div>
                 </div>
@@ -480,95 +664,310 @@ export default function Home() {
           </div>
         )}
 
-        {view === 'lessons' && (
+        {/* 作品分享视图 */}
+        {view === 'share' && (
           <div className="space-y-4">
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-4 sm:p-6 border border-gray-100">
-              <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">📚 全部课程</h2>
+              <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">📤 我的录音作品</h2>
 
-              <div className="grid gap-4">
-                {mockExercises.map((exercise) => (
-                  <div
-                    key={exercise.id}
-                    className="p-4 bg-white rounded-xl border-2 border-gray-200 hover:border-indigo-300 hover:shadow-md transition-all"
-                  >
-                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h3 className="font-bold text-gray-900">{exercise.name}</h3>
-                          <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getDifficultyColor(exercise.difficulty)}`}>
-                            {exercise.difficulty}
-                          </span>
+              {recordings.length > 0 ? (
+                <div className="space-y-3">
+                  {recordings.map((recording) => (
+                    <div key={recording.id} className="bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md transition-all">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex-1">
+                          <h3 className="font-bold text-gray-900">{recording.name}</h3>
+                          <p className="text-xs text-gray-600">{recording.date} · {recording.duration}</p>
                         </div>
-                        <p className="text-xs text-gray-600 mb-2">{exercise.category} · {exercise.duration}</p>
-                        <p className="text-sm text-gray-700 mb-3">{exercise.description}</p>
-
-                        <div>
-                          <p className="text-xs text-gray-500 mb-2">训练效果：</p>
-                          <div className="flex flex-wrap gap-2">
-                            {exercise.benefits.map((benefit, idx) => (
-                              <span
-                                key={idx}
-                                className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-medium"
-                              >
-                                {benefit}
-                              </span>
-                            ))}
-                          </div>
+                        <div className={`text-2xl font-bold ${getScoreColor(recording.score)}`}>
+                          {recording.score}
                         </div>
                       </div>
 
-                      <button className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold py-2 px-6 rounded-lg transition-all duration-200 active:scale-95 whitespace-nowrap">
-                        开始学习
-                      </button>
+                      {currentRecording?.id === recording.id && playing && (
+                        <div className="mb-3">
+                          <div className="bg-gray-200 rounded-full h-2 overflow-hidden">
+                            <div
+                              className="h-full bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full transition-all"
+                              style={{ width: `${playProgress}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => playRecording(recording)}
+                          className="flex-1 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 font-semibold py-2 px-4 rounded-lg transition-all"
+                        >
+                          {playing && currentRecording?.id === recording.id ? '⏸ 暂停' : '▶ 播放'}
+                        </button>
+                        <button
+                          onClick={() => setView('analysis')}
+                          className="flex-1 bg-purple-100 hover:bg-purple-200 text-purple-700 font-semibold py-2 px-4 rounded-lg transition-all"
+                        >
+                          📊 查看分析
+                        </button>
+                      </div>
+
+                      <div className="mt-3 pt-3 border-t border-gray-200">
+                        <p className="text-xs font-semibold text-gray-700 mb-2">分享到：</p>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => shareRecording('微信')}
+                            className="flex-1 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-3 rounded-lg text-sm transition-all"
+                          >
+                            💬 微信
+                          </button>
+                          <button
+                            onClick={() => shareRecording('抖音')}
+                            className="flex-1 bg-black hover:bg-gray-800 text-white font-semibold py-2 px-3 rounded-lg text-sm transition-all"
+                          >
+                            🎵 抖音
+                          </button>
+                          <button
+                            onClick={() => shareRecording('微博')}
+                            className="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-3 rounded-lg text-sm transition-all"
+                          >
+                            📱 微博
+                          </button>
+                        </div>
+                      </div>
                     </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <div className="text-4xl mb-3">🎤</div>
+                  <p className="text-gray-600">还没有录音作品</p>
+                  <button
+                    onClick={() => setView('practice')}
+                    className="mt-4 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold py-2 px-6 rounded-lg transition-all"
+                  >
+                    开始录音
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* 打卡视图 */}
+        {view === 'checkin' && (
+          <div className="space-y-4">
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-4 sm:p-6 border border-gray-100">
+              <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">📅 每日打卡</h2>
+
+              <div className="text-center mb-6">
+                <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-br from-orange-100 to-red-100 mb-3">
+                  <div>
+                    <p className="text-4xl font-bold text-orange-600">{streak}</p>
+                    <p className="text-xs text-gray-600">连续天数</p>
                   </div>
-                ))}
+                </div>
+                <p className="text-sm text-gray-600 mb-4">坚持练习，养成好习惯！</p>
+
+                <button
+                  onClick={checkInToday}
+                  disabled={todayPracticed}
+                  className={`${
+                    todayPracticed
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white'
+                  } font-semibold py-3 px-6 rounded-xl shadow-md transition-all`}
+                >
+                  {todayPracticed ? '✓ 今日已打卡' : '📅 立即打卡'}
+                </button>
+              </div>
+
+              <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-4 border border-indigo-200 mb-4">
+                <h4 className="font-semibold text-gray-900 mb-2">📊 本周统计</h4>
+                <div className="grid grid-cols-3 gap-3 text-center">
+                  <div>
+                    <p className="text-2xl font-bold text-indigo-600">{checkIns.length}</p>
+                    <p className="text-xs text-gray-600">打卡天数</p>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-purple-600">
+                      {checkIns.reduce((sum, c) => sum + c.minutes, 0)}
+                    </p>
+                    <p className="text-xs text-gray-600">练习分钟</p>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-pink-600">
+                      {checkIns.reduce((sum, c) => sum + c.exercises, 0)}
+                    </p>
+                    <p className="text-xs text-gray-600">完成练习</p>
+                  </div>
+                </div>
               </div>
             </div>
 
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-4 sm:p-6 border border-gray-100">
-              <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">🎓 学习路径</h2>
+              <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">📜 打卡记录</h2>
 
-              <div className="space-y-3">
-                <div className="flex items-start gap-3">
-                  <div className="flex-shrink-0 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
-                    ✓
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-bold text-gray-900">阶段一：基础入门</h4>
-                    <p className="text-sm text-gray-600">掌握正确的发声方法和呼吸技巧</p>
-                  </div>
+              {checkIns.length > 0 ? (
+                <div className="space-y-2">
+                  {checkIns.map((checkin, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white font-bold">
+                          ✓
+                        </div>
+                        <div>
+                          <p className="font-semibold text-gray-900">{checkin.date}</p>
+                          <p className="text-xs text-gray-600">{checkin.exercises}个练习 · {checkin.minutes}分钟</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
+              ) : (
+                <div className="text-center py-8">
+                  <div className="text-4xl mb-3">📅</div>
+                  <p className="text-gray-600">还没有打卡记录</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
-                <div className="flex items-start gap-3">
-                  <div className="flex-shrink-0 w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
-                    2
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-bold text-gray-900">阶段二：技巧提升</h4>
-                    <p className="text-sm text-gray-600">学习颤音、转音等进阶技巧</p>
-                  </div>
-                </div>
 
-                <div className="flex items-start gap-3">
-                  <div className="flex-shrink-0 w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center text-white text-sm font-bold">
-                    3
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-bold text-gray-900">阶段三：音域拓展</h4>
-                    <p className="text-sm text-gray-600">科学方法扩展音域，突破高音</p>
-                  </div>
-                </div>
+        {/* PK对战视图 */}
+        {view === 'pk' && (
+          <div className="space-y-4">
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-4 sm:p-6 border border-gray-100">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg sm:text-xl font-bold text-gray-900">⚔️ PK对战</h2>
+                <button className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold py-2 px-4 rounded-lg transition-all">
+                  + 发起对战
+                </button>
+              </div>
 
-                <div className="flex items-start gap-3">
-                  <div className="flex-shrink-0 w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center text-white text-sm font-bold">
-                    4
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-bold text-gray-900">阶段四：情感表达</h4>
-                    <p className="text-sm text-gray-600">掌握情感处理和演唱表现力</p>
-                  </div>
+              {pkBattles.length > 0 ? (
+                <div className="space-y-3">
+                  {pkBattles.map((battle) => (
+                    <div key={battle.id} className="bg-white rounded-xl border-2 border-gray-200 p-4 hover:shadow-md transition-all">
+                      <div className="flex items-center justify-between mb-3">
+                        <div>
+                          <h3 className="font-bold text-gray-900">{battle.song}</h3>
+                          <p className="text-xs text-gray-600">对手：{battle.opponent}</p>
+                        </div>
+                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getPKStatusColor(battle.status)}`}>
+                          {getPKStatusText(battle.status)}
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3 mb-3">
+                        <div className={`p-3 rounded-lg border-2 ${battle.myScore > battle.opponentScore ? 'border-green-500 bg-green-50' : 'border-gray-200 bg-gray-50'}`}>
+                          <p className="text-xs text-gray-500 mb-1">我的得分</p>
+                          <p className="text-2xl font-bold text-indigo-600">{battle.myScore}</p>
+                          {battle.myScore > battle.opponentScore && battle.status !== 'ongoing' && (
+                            <p className="text-xs text-green-600 mt-1">🏆 获胜</p>
+                          )}
+                        </div>
+                        <div className={`p-3 rounded-lg border-2 ${battle.opponentScore > battle.myScore ? 'border-red-500 bg-red-50' : 'border-gray-200 bg-gray-50'}`}>
+                          <p className="text-xs text-gray-500 mb-1">对手得分</p>
+                          <p className="text-2xl font-bold text-purple-600">{battle.opponentScore}</p>
+                          {battle.opponentScore > battle.myScore && battle.status !== 'ongoing' && (
+                            <p className="text-xs text-red-600 mt-1">💔 失败</p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="text-xs text-gray-600 mb-3">
+                        {battle.status === 'ongoing' ? `结束时间：${battle.endTime}` : `已结束：${battle.endTime}`}
+                      </div>
+
+                      {battle.status === 'ongoing' && (
+                        <button className="w-full bg-indigo-100 hover:bg-indigo-200 text-indigo-700 font-semibold py-2 px-4 rounded-lg transition-all">
+                          继续对战
+                        </button>
+                      )}
+                    </div>
+                  ))}
                 </div>
+              ) : (
+                <div className="text-center py-8">
+                  <div className="text-4xl mb-3">⚔️</div>
+                  <p className="text-gray-600">还没有PK对战记录</p>
+                </div>
+              )}
+            </div>
+
+            <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl p-4 border border-yellow-200">
+              <h3 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
+                <span>💡</span>
+                <span>PK对战规则</span>
+              </h3>
+              <ul className="text-sm text-gray-700 space-y-1">
+                <li>• 选择同一首歌与好友进行对战</li>
+                <li>• 系统将根据音准、节奏、音色等维度评分</li>
+                <li>• 得分高者获胜，可以赢取勋章和积分</li>
+                <li>• 每天可发起3次对战，尽情挑战吧！</li>
+              </ul>
+            </div>
+          </div>
+        )}
+
+        {/* API设置视图 */}
+        {view === 'settings' && (
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-4 sm:p-6 border border-gray-100">
+            <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">⚙️ 语音识别API设置</h2>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">服务提供商</label>
+                <select
+                  value={apiProvider}
+                  onChange={(e) => setApiProvider(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                >
+                  <option value="">请选择</option>
+                  <option value="openai-whisper">OpenAI Whisper</option>
+                  <option value="google-cloud">Google Cloud Speech-to-Text</option>
+                  <option value="azure">Azure Speech Service</option>
+                  <option value="baidu">百度语音识别</option>
+                  <option value="tencent">腾讯云语音识别</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">API密钥</label>
+                <input
+                  type="password"
+                  placeholder="sk-..."
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                />
+              </div>
+
+              <div className="bg-indigo-50 rounded-xl p-4 border border-indigo-200">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={apiEnabled}
+                    onChange={(e) => setApiEnabled(e.target.checked)}
+                    className="w-5 h-5 text-indigo-600 rounded focus:ring-2 focus:ring-indigo-500"
+                  />
+                  <div>
+                    <div className="font-semibold text-gray-900">启用实时语音识别</div>
+                    <div className="text-sm text-gray-600">连接API后可实现精准音准检测</div>
+                  </div>
+                </label>
+              </div>
+
+              <button className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold py-3 px-4 rounded-xl shadow-md hover:shadow-lg active:scale-95 transition-all">
+                保存设置
+              </button>
+
+              <div className="bg-yellow-50 rounded-xl p-4 border border-yellow-200">
+                <h4 className="font-semibold text-gray-900 mb-2">💡 配置说明</h4>
+                <ul className="text-sm text-gray-700 space-y-1">
+                  <li>• 配置API后可获得更精准的音准检测</li>
+                  <li>• 支持多种主流语音识别服务</li>
+                  <li>• API密钥仅存储在本地，确保安全</li>
+                  <li>• 未配置时使用模拟数据进行分析</li>
+                </ul>
               </div>
             </div>
           </div>
