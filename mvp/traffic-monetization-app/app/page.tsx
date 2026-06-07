@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface AdSpace {
   id: string;
@@ -23,9 +23,51 @@ interface OptimizationSuggestion {
   impact: string;
 }
 
+interface ABTest {
+  id: string;
+  name: string;
+  status: 'running' | 'completed' | 'draft';
+  variantA: string;
+  variantB: string;
+  conversionA: number;
+  conversionB: number;
+  winner: 'A' | 'B' | 'undecided';
+  startDate: string;
+  endDate: string;
+}
+
+interface Platform {
+  id: string;
+  name: string;
+  icon: string;
+  connected: boolean;
+  revenue: number;
+  impressions: number;
+  status: 'active' | 'inactive' | 'error';
+}
+
+interface ReportConfig {
+  format: 'excel' | 'pdf' | 'csv';
+  period: 'today' | 'week' | 'month' | 'custom';
+  includeCharts: boolean;
+  includeDetails: boolean;
+}
+
+type ViewType = 'dashboard' | 'spaces' | 'optimization' | 'abtest' | 'platforms' | 'export';
+
 export default function Home() {
-  const [view, setView] = useState<'dashboard' | 'spaces' | 'optimization'>('dashboard');
+  const [view, setView] = useState<ViewType>('dashboard');
   const [selectedPeriod, setSelectedPeriod] = useState<'today' | 'week' | 'month'>('today');
+  const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
+  const [isAutoRefresh, setIsAutoRefresh] = useState(true);
+  const [abTests, setABTests] = useState<ABTest[]>([]);
+  const [platforms, setPlatforms] = useState<Platform[]>([]);
+  const [reportConfig, setReportConfig] = useState<ReportConfig>({
+    format: 'excel',
+    period: 'today',
+    includeCharts: true,
+    includeDetails: true
+  });
 
   const mockAdSpaces: AdSpace[] = [
     {
@@ -109,6 +151,112 @@ export default function Home() {
     }
   ];
 
+  // 初始化A/B测试数据
+  const generateABTests = () => {
+    const tests: ABTest[] = [
+      {
+        id: '1',
+        name: '首页横幅尺寸测试',
+        status: 'running',
+        variantA: '728x90',
+        variantB: '970x90',
+        conversionA: 1.52,
+        conversionB: 1.78,
+        winner: 'B',
+        startDate: '2026-06-01',
+        endDate: '2026-06-14'
+      },
+      {
+        id: '2',
+        name: '侧边栏颜色测试',
+        status: 'running',
+        variantA: '蓝色主题',
+        variantB: '红色主题',
+        conversionA: 1.26,
+        conversionB: 1.31,
+        winner: 'undecided',
+        startDate: '2026-06-03',
+        endDate: '2026-06-17'
+      },
+      {
+        id: '3',
+        name: '底部广告位置测试',
+        status: 'completed',
+        variantA: '固定底部',
+        variantB: '滚动底部',
+        conversionA: 1.29,
+        conversionB: 1.65,
+        winner: 'B',
+        startDate: '2026-05-20',
+        endDate: '2026-06-03'
+      }
+    ];
+    setABTests(tests);
+  };
+
+  // 初始化平台数据
+  const generatePlatforms = () => {
+    const platformList: Platform[] = [
+      {
+        id: '1',
+        name: 'Google AdSense',
+        icon: '🌐',
+        connected: true,
+        revenue: 2850,
+        impressions: 32400,
+        status: 'active'
+      },
+      {
+        id: '2',
+        name: '百度联盟',
+        icon: '🔍',
+        connected: true,
+        revenue: 1680,
+        impressions: 18900,
+        status: 'active'
+      },
+      {
+        id: '3',
+        name: '腾讯广告',
+        icon: '💬',
+        connected: true,
+        revenue: 1240,
+        impressions: 15200,
+        status: 'active'
+      },
+      {
+        id: '4',
+        name: '头条广告',
+        icon: '📰',
+        connected: false,
+        revenue: 0,
+        impressions: 0,
+        status: 'inactive'
+      },
+      {
+        id: '5',
+        name: 'Taboola',
+        icon: '🎯',
+        connected: false,
+        revenue: 0,
+        impressions: 0,
+        status: 'inactive'
+      }
+    ];
+    setPlatforms(platformList);
+  };
+
+  // 实时数据更新
+  useEffect(() => {
+    if (isAutoRefresh) {
+      const interval = setInterval(() => {
+        setLastUpdate(new Date());
+      }, 30000); // 每30秒更新一次
+
+      return () => clearInterval(interval);
+    }
+  }, [isAutoRefresh]);
+
   const totalStats = {
     revenue: mockAdSpaces.reduce((sum, space) => sum + space.revenue, 0),
     impressions: mockAdSpaces.reduce((sum, space) => sum + space.impressions, 0),
@@ -142,6 +290,49 @@ export default function Home() {
     }
   };
 
+  const getABTestStatusColor = (status: string) => {
+    switch (status) {
+      case 'running':
+        return 'bg-green-100 text-green-700';
+      case 'completed':
+        return 'bg-gray-100 text-gray-700';
+      case 'draft':
+        return 'bg-yellow-100 text-yellow-700';
+      default:
+        return 'bg-gray-100 text-gray-700';
+    }
+  };
+
+  const getABTestStatusText = (status: string) => {
+    switch (status) {
+      case 'running':
+        return '进行中';
+      case 'completed':
+        return '已完成';
+      case 'draft':
+        return '草稿';
+      default:
+        return '未知';
+    }
+  };
+
+  const getPlatformStatusColor = (status: string) => {
+    switch (status) {
+      case 'active':
+        return 'bg-green-100 text-green-700';
+      case 'inactive':
+        return 'bg-gray-100 text-gray-500';
+      case 'error':
+        return 'bg-red-100 text-red-700';
+      default:
+        return 'bg-gray-100 text-gray-500';
+    }
+  };
+
+  const exportReport = () => {
+    alert(`正在导出${reportConfig.format.toUpperCase()}格式的${reportConfig.period === 'today' ? '今日' : reportConfig.period === 'week' ? '本周' : '本月'}报表...`);
+  };
+
   return (
     <main className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 py-4 sm:py-8 px-3 sm:px-4">
       <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6">
@@ -158,44 +349,72 @@ export default function Home() {
           <p className="mt-2 text-sm sm:text-base text-gray-600">AI智能优化 · 收益最大化 · 数据分析</p>
         </div>
 
-        {/* 导航 */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-2 border border-gray-100">
-          <div className="flex gap-2">
-            <button
-              onClick={() => setView('dashboard')}
-              className={`flex-1 py-3 px-4 rounded-xl font-semibold transition-all ${
-                view === 'dashboard'
-                  ? 'bg-gradient-to-r from-purple-500 to-pink-600 text-white shadow-md'
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
-            >
-              📊 数据概览
-            </button>
-            <button
-              onClick={() => setView('spaces')}
-              className={`flex-1 py-3 px-4 rounded-xl font-semibold transition-all ${
-                view === 'spaces'
-                  ? 'bg-gradient-to-r from-purple-500 to-pink-600 text-white shadow-md'
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
-            >
-              📍 广告位
-            </button>
-            <button
-              onClick={() => setView('optimization')}
-              className={`flex-1 py-3 px-4 rounded-xl font-semibold transition-all ${
-                view === 'optimization'
-                  ? 'bg-gradient-to-r from-purple-500 to-pink-600 text-white shadow-md'
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
-            >
-              🚀 优化建议
-            </button>
+        {/* 导航标签 */}
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-2 border border-gray-100 overflow-x-auto">
+          <div className="flex gap-2 min-w-max">
+            {[
+              { id: 'dashboard' as ViewType, label: '📊 概览' },
+              { id: 'spaces' as ViewType, label: '📍 广告位' },
+              { id: 'optimization' as ViewType, label: '🚀 优化' },
+              { id: 'abtest' as ViewType, label: '🧪 A/B测试' },
+              { id: 'platforms' as ViewType, label: '🔗 平台' },
+              { id: 'export' as ViewType, label: '📄 导出' }
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => {
+                  setView(tab.id);
+                  if (tab.id === 'abtest' && abTests.length === 0) {
+                    generateABTests();
+                  }
+                  if (tab.id === 'platforms' && platforms.length === 0) {
+                    generatePlatforms();
+                  }
+                }}
+                className={`py-3 px-4 rounded-xl font-semibold text-xs sm:text-sm transition-all whitespace-nowrap ${
+                  view === tab.id
+                    ? 'bg-gradient-to-r from-purple-500 to-pink-600 text-white shadow-md'
+                    : 'text-gray-600 hover:bg-gray-100'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
         </div>
 
+        {/* 数据概览视图 */}
         {view === 'dashboard' && (
           <>
+            {/* 实时更新状态 */}
+            <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-md p-3 border border-gray-100">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className={`w-2 h-2 rounded-full ${isAutoRefresh ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></div>
+                  <span className="text-sm text-gray-600">
+                    最后更新：{lastUpdate.toLocaleTimeString('zh-CN')}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={isAutoRefresh}
+                      onChange={(e) => setIsAutoRefresh(e.target.checked)}
+                      className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
+                    />
+                    <span className="text-sm text-gray-700">自动刷新</span>
+                  </label>
+                  <button
+                    onClick={() => setLastUpdate(new Date())}
+                    className="px-3 py-1 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg text-sm font-medium transition-all"
+                  >
+                    🔄 刷新
+                  </button>
+                </div>
+              </div>
+            </div>
+
             {/* 时间选择 */}
             <div className="flex justify-end gap-2">
               {(['today', 'week', 'month'] as const).map((period) => (
@@ -293,6 +512,7 @@ export default function Home() {
           </>
         )}
 
+        {/* 广告位视图 */}
         {view === 'spaces' && (
           <div className="space-y-4">
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-4 sm:p-6 border border-gray-100">
@@ -361,30 +581,10 @@ export default function Home() {
                 ))}
               </div>
             </div>
-
-            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-4 sm:p-6 border border-gray-100">
-              <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">💡 快速操作</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <button className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 rounded-xl border border-blue-200 text-left transition-all">
-                  <div className="text-2xl mb-2">🔄</div>
-                  <p className="font-semibold text-gray-900 mb-1">批量刷新</p>
-                  <p className="text-xs text-gray-600">刷新所有广告位数据</p>
-                </button>
-                <button className="p-4 bg-gradient-to-br from-green-50 to-green-100 hover:from-green-100 hover:to-green-200 rounded-xl border border-green-200 text-left transition-all">
-                  <div className="text-2xl mb-2">📊</div>
-                  <p className="font-semibold text-gray-900 mb-1">导出报表</p>
-                  <p className="text-xs text-gray-600">导出完整数据报表</p>
-                </button>
-                <button className="p-4 bg-gradient-to-br from-purple-50 to-purple-100 hover:from-purple-100 hover:to-purple-200 rounded-xl border border-purple-200 text-left transition-all">
-                  <div className="text-2xl mb-2">⚙️</div>
-                  <p className="font-semibold text-gray-900 mb-1">批量设置</p>
-                  <p className="text-xs text-gray-600">批量修改广告位配置</p>
-                </button>
-              </div>
-            </div>
           </div>
         )}
 
+        {/* 优化建议视图 */}
         {view === 'optimization' && (
           <div className="space-y-4">
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-4 sm:p-6 border border-gray-100">
@@ -470,7 +670,262 @@ export default function Home() {
             </div>
           </div>
         )}
+
+        {/* A/B测试视图 */}
+        {view === 'abtest' && (
+          <div className="space-y-4">
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-4 sm:p-6 border border-gray-100">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg sm:text-xl font-bold text-gray-900">🧪 A/B测试管理</h2>
+                <button className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200 active:scale-95">
+                  + 创建测试
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                {abTests.map((test) => (
+                  <div key={test.id} className="bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md transition-shadow">
+                    <div className="flex items-start justify-between gap-4 mb-3">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <h3 className="font-bold text-gray-900">{test.name}</h3>
+                          <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getABTestStatusColor(test.status)}`}>
+                            {getABTestStatusText(test.status)}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-600">
+                          {test.startDate} 至 {test.endDate}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 mb-3">
+                      <div className={`p-3 rounded-lg border-2 ${test.winner === 'A' ? 'border-green-500 bg-green-50' : 'border-gray-200 bg-gray-50'}`}>
+                        <p className="text-xs text-gray-500 mb-1">版本 A</p>
+                        <p className="font-semibold text-gray-900 mb-1">{test.variantA}</p>
+                        <p className="text-lg font-bold text-purple-600">{test.conversionA}% CTR</p>
+                        {test.winner === 'A' && (
+                          <p className="text-xs text-green-600 mt-1">🏆 获胜版本</p>
+                        )}
+                      </div>
+                      <div className={`p-3 rounded-lg border-2 ${test.winner === 'B' ? 'border-green-500 bg-green-50' : 'border-gray-200 bg-gray-50'}`}>
+                        <p className="text-xs text-gray-500 mb-1">版本 B</p>
+                        <p className="font-semibold text-gray-900 mb-1">{test.variantB}</p>
+                        <p className="text-lg font-bold text-purple-600">{test.conversionB}% CTR</p>
+                        {test.winner === 'B' && (
+                          <p className="text-xs text-green-600 mt-1">🏆 获胜版本</p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <button className="flex-1 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-all">
+                        查看详情
+                      </button>
+                      {test.status === 'running' && (
+                        <button className="px-3 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-sm font-medium transition-all">
+                          停止测试
+                        </button>
+                      )}
+                      {test.status === 'completed' && test.winner !== 'undecided' && (
+                        <button className="px-3 py-2 bg-green-100 hover:bg-green-200 text-green-700 rounded-lg text-sm font-medium transition-all">
+                          应用获胜版本
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-4 sm:p-6 border border-blue-200">
+              <h3 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
+                <span>💡</span>
+                <span>A/B测试最佳实践</span>
+              </h3>
+              <ul className="text-sm text-gray-700 space-y-1">
+                <li>• 每次只测试一个变量，确保结果可归因</li>
+                <li>• 测试周期建议至少7-14天，获取充足样本</li>
+                <li>• 显著性差异达到95%以上再应用获胜版本</li>
+                <li>• 记录所有测试结果，建立知识库</li>
+              </ul>
+            </div>
+          </div>
+        )}
+
+        {/* 平台集成视图 */}
+        {view === 'platforms' && (
+          <div className="space-y-4">
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-4 sm:p-6 border border-gray-100">
+              <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">🔗 广告平台集成</h2>
+
+              <div className="grid gap-4">
+                {platforms.map((platform) => (
+                  <div key={platform.id} className="bg-white rounded-xl border-2 border-gray-200 p-4 hover:shadow-md transition-all">
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-4 flex-1">
+                        <div className="w-14 h-14 bg-gradient-to-br from-purple-100 to-pink-200 rounded-xl flex items-center justify-center text-3xl">
+                          {platform.icon}
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="font-bold text-gray-900">{platform.name}</h3>
+                            <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getPlatformStatusColor(platform.status)}`}>
+                              {platform.connected ? '已连接' : '未连接'}
+                            </span>
+                          </div>
+                          {platform.connected ? (
+                            <div className="grid grid-cols-2 gap-3 mt-2">
+                              <div>
+                                <p className="text-xs text-gray-500">收益</p>
+                                <p className="font-bold text-purple-600">¥{platform.revenue.toLocaleString()}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs text-gray-500">曝光量</p>
+                                <p className="font-semibold text-gray-900">{(platform.impressions / 1000).toFixed(1)}K</p>
+                              </div>
+                            </div>
+                          ) : (
+                            <p className="text-sm text-gray-600">连接此平台以聚合广告收益数据</p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        {platform.connected ? (
+                          <>
+                            <button className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-lg text-sm transition-all">
+                              配置
+                            </button>
+                            <button className="px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 font-semibold rounded-lg text-sm transition-all">
+                              断开
+                            </button>
+                          </>
+                        ) : (
+                          <button className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-semibold rounded-lg text-sm transition-all active:scale-95">
+                            连接平台
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl p-4 sm:p-6 border border-yellow-200">
+              <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
+                <span>📊</span>
+                <span>多平台数据聚合优势</span>
+              </h3>
+              <ul className="text-sm text-gray-700 space-y-2">
+                <li>• 统一管理多个广告平台，一站式查看所有收益</li>
+                <li>• 自动对比各平台CPM和CTR，选择最优平台</li>
+                <li>• 智能分配流量到高收益平台，提升整体收入</li>
+                <li>• 支持批量导出报表，简化财务对账流程</li>
+              </ul>
+            </div>
+          </div>
+        )}
+
+        {/* 报表导出视图 */}
+        {view === 'export' && (
+          <div className="space-y-4">
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-4 sm:p-6 border border-gray-100">
+              <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">📄 报表导出</h2>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">导出格式</label>
+                  <div className="grid grid-cols-3 gap-3">
+                    {(['excel', 'pdf', 'csv'] as const).map((format) => (
+                      <button
+                        key={format}
+                        onClick={() => setReportConfig({ ...reportConfig, format })}
+                        className={`p-4 rounded-xl border-2 transition-all ${
+                          reportConfig.format === format
+                            ? 'border-purple-500 bg-purple-50'
+                            : 'border-gray-200 bg-white hover:border-gray-300'
+                        }`}
+                      >
+                        <div className="text-2xl mb-1">
+                          {format === 'excel' ? '📊' : format === 'pdf' ? '📄' : '📋'}
+                        </div>
+                        <p className="font-semibold text-gray-900 text-sm">{format.toUpperCase()}</p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">时间范围</label>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {(['today', 'week', 'month', 'custom'] as const).map((period) => (
+                      <button
+                        key={period}
+                        onClick={() => setReportConfig({ ...reportConfig, period })}
+                        className={`py-3 px-4 rounded-lg font-medium text-sm transition-all ${
+                          reportConfig.period === period
+                            ? 'bg-purple-500 text-white'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                      >
+                        {period === 'today' ? '今日' : period === 'week' ? '本周' : period === 'month' ? '本月' : '自定义'}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                  <h4 className="font-semibold text-gray-900 mb-3">报表内容</h4>
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={reportConfig.includeCharts}
+                        onChange={(e) => setReportConfig({ ...reportConfig, includeCharts: e.target.checked })}
+                        className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
+                      />
+                      <span className="text-sm text-gray-700">包含图表</span>
+                    </label>
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={reportConfig.includeDetails}
+                        onChange={(e) => setReportConfig({ ...reportConfig, includeDetails: e.target.checked })}
+                        className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
+                      />
+                      <span className="text-sm text-gray-700">包含详细数据</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-4 border border-purple-200">
+                  <h4 className="font-semibold text-gray-900 mb-2">报表预览</h4>
+                  <p className="text-sm text-gray-700 mb-3">
+                    即将导出{reportConfig.period === 'today' ? '今日' : reportConfig.period === 'week' ? '本周' : reportConfig.period === 'month' ? '本月' : '自定义时间段'}
+                    的{reportConfig.format.toUpperCase()}格式报表
+                  </p>
+                  <ul className="text-sm text-gray-600 space-y-1">
+                    <li>✓ 总收益、曝光量、点击量数据</li>
+                    <li>✓ 各广告位详细表现</li>
+                    {reportConfig.includeCharts && <li>✓ 收益趋势图表</li>}
+                    {reportConfig.includeDetails && <li>✓ 每日明细数据</li>}
+                  </ul>
+                </div>
+
+                <button
+                  onClick={exportReport}
+                  className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-semibold py-3 px-4 rounded-xl shadow-md hover:shadow-lg active:scale-95 transition-all duration-200"
+                >
+                  立即导出报表
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </main>
   );
 }
+
