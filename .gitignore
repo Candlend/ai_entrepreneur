@@ -58,10 +58,31 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
+# Next.js
+.next/
+out/
+
+# Testing
+coverage/
+*.lcov
+test-results/
+playwright-report/
+playwright/.cache/
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Vercel
+.vercel
+
 # Build outputs
 dist/
 build/
 *.bundle.js
+
+# Turbo
+.turbo
 
 # OS
 Thumbs.db

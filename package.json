@@ -1,0 +1,32 @@
+{
+  "name": "@ai-entrepreneur/root",
+  "private": true,
+  "version": "0.1.0",
+  "description": "AI Entrepreneur MVP Projects - Monorepo",
+  "scripts": {
+    "prepare": "husky",
+    "lint": "pnpm -r exec eslint . --ext ts,tsx",
+    "lint:fix": "pnpm -r exec eslint . --ext ts,tsx --fix",
+    "format": "prettier --write \"**/*.{ts,tsx,json,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,json,md}\"",
+    "test": "pnpm -r test",
+    "test:coverage": "pnpm -r test:coverage"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "eslint": "^8.56.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.5.2",
+    "prettier": "^3.8.3",
+    "prettier-plugin-tailwindcss": "^0.5.14",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@8.15.0"
+}
