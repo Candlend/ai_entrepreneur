@@ -1,3 +1,1 @@
-packages:
-  - 'mvp/*'
-  - 'shared/*'
+packages: []
