@@ -103,3 +103,6 @@ credentials/
 data/raw/
 data/temp/
 *.csv.bak
+
+# Local files
+*.local.*
