@@ -1,0 +1,7 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "cd apps/health-landing && pnpm install && pnpm build",
+  "outputDirectory": "apps/health-landing/.next",
+  "framework": "nextjs",
+  "installCommand": "pnpm install"
+}
