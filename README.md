@@ -1,149 +1,161 @@
-# AI创业项目调研文档
+# AI创业工作区
 
-**项目启动日期**：2026年5月29日  
-**最后更新**：2026年6月2日  
-**参与人员**：黄程宇、成昂
+AI创业团队的主仓库，包含共享文档、调研资料和会议纪要。
 
----
+## 📋 项目概述
 
-## 📋 文档导航
+这是一个AI创业团队的workspace，我们正在探索和开发多个AI创业idea。每个idea有独立的GitHub repo和Multica project进行管理。
 
-### 核心文档
-- **[综合对比分析报告](research/00-综合对比分析报告.md)** ⭐ 推荐首先阅读
-  - 4大方向对比矩阵
-  - 决策框架和行动建议
-  - 适合不同背景的路径推荐
+## 🎯 活跃项目
 
-### 详细调研报告
-1. **[外贸SOHO深度调研](research/reports/01-外贸SOHO深度调研.md)**
-   - 2026年出口数据与趋势
-   - 美国De Minimis政策影响
-   - 可实现路径（工具、平台、合规、走账）
-   - 启动成本：$500-5000
+我们目前正在推进以下5个项目：
 
-2. **[AI炒股量化投资调研](research/reports/02-AI炒股量化投资调研.md)**
-   - AI在股票投资中的实际效果
-   - 真实收益案例与失败率
-   - 可实现路径（平台、开源项目、合规）
-   - 启动成本：$500-25000
+1. **[AI求职顾问](https://github.com/Candlend/ai-job-advisor)** 💼
+   - 简历优化 + 模拟面试服务
+   - 状态：Amazing Prototype阶段 - 用户访谈中
 
-3. **[软件开发与SaaS调研](research/reports/03-软件开发SaaS调研.md)**
-   - Chrome插件变现模式
-   - AI工具在开发中的应用
-   - 可实现路径（技术栈、开源模板、上架）
-   - 启动成本：$500-5000
+2. **[减肥健康管理应用（瘦享AI）](https://github.com/Candlend/weight-loss-ai)** 🏃
+   - AI减肥教练 + 饮食管理
+   - 状态：MVP开发中
 
-4. **[其他AI创业变现方式](research/reports/04-其他AI创业变现方式调研.md)**
-   - AI内容创作、服务外包、联盟营销
-   - AI数字人直播、数据标注
-   - 13种变现方式对比分析
+3. **[全自动视频剪辑工具](https://github.com/Candlend/video-editing-ai)** 🎬
+   - 游戏高光自动识别与剪辑
+   - 状态：Blocked - 等待市场验证
 
-### 会议记录
-- **[260529会议纪要](meetings/20260529.md)**
-  - 三个核心方向头脑风暴
-  - 优劣势与可行性评估
-  - 后续行动计划
+4. **[AI声乐指导](https://github.com/Candlend/vocal-coach-ai)** 🎤
+   - 智能声乐训练平台
+   - 状态：Amazing Prototype阶段 - 需求验证中
 
----
+5. **[宠物健康管理](https://github.com/Candlend/pet-health-ai)** 🐾
+   - 宠物健康信息聚合与智能诊断
+   - 状态：Amazing Prototype阶段 - 手动服务验证中
 
-## 🎯 快速决策指南
-
-### 如果你想快速了解
-👉 阅读 [综合对比分析报告](research/00-综合对比分析报告.md) 的"执行摘要"和"决策框架"部分
-
-### 如果你已有明确方向
-👉 直接阅读对应的详细调研报告
-
-### 如果你想了解项目背景
-👉 阅读 [会议纪要](meetings/20260529.md)
-
----
-
-## 📊 核心结论速览
-
-### 最推荐方向（综合评分）
-1. **软件开发/SaaS**（8.2/10）- 可控性强，AI赋能显著
-2. **AI工具联盟营销**（7.8/10）- 低门槛，被动收入
-3. **AI服务外包**（7.5/10）- 需求旺盛，现金流好
-
-### 需谨慎方向
-- **AI炒股量化投资**（5.6/10）- 高风险，不适合大多数人
-- **外贸SOHO**（6.8/10）- 政策风险高，需转向新兴市场
-
-### 启动成本对比
-| 方向 | 最低成本 | 盈亏平衡 | 月收入潜力 |
-|------|---------|---------|-----------|
-| AI联盟营销 | $0-500 | 1-3个月 | $500-10K |
-| 软件开发/SaaS | $500-5000 | 6-12个月 | $5K-50K |
-| 外贸SOHO | $500-5000 | 3-6个月 | $2K-10K |
-| AI炒股 | $500-25000 | 不确定 | -100%至+∞ |
-
----
-
-## 🚀 下一步行动
-
-### 本周行动
-1. 团队成员阅读综合对比分析报告
-2. 每人选择1-2个感兴趣的方向
-3. 准备下次会议讨论
-
-### 下次会议议题
-1. 确定团队选择的方向
-2. 制定3个月行动计划
-3. 分配任务和责任人
-4. 设定检查点和里程碑
-
----
-
-## 📚 数据来源
-
-所有调研报告基于150+权威来源：
-- 官方数据（海关总署、SEC、FINRA）
-- 行业报告（TradeAlgo、BofA Securities）
-- 学术论文（arXiv、IEEE）
-- 真实案例（Indie Hackers、Product Hunt）
-
-所有数据均附带URL，可追溯验证。
-
----
-
-## 📁 项目结构
+## 📁 仓库结构
 
 ```
 ai_entrepreneur/
-├── README.md                          # 本文件
-├── CLAUDE.md                          # 项目配置
-├── meetings/                          # 会议记录
-│   └── 20260529.md
-└── research/                          # 调研报告
-    ├── 00-综合对比分析报告.md         # ⭐ 核心文档
-    └── reports/                       # 详细报告
-        ├── 01-外贸SOHO深度调研.md
-        ├── 02-AI炒股量化投资调研.md
-        ├── 03-软件开发SaaS调研.md
-        └── 04-其他AI创业变现方式调研.md
+├── README.md                    # 本文件
+├── CLAUDE.md                    # Agent指令和工作机制
+├── docs/                        # 共享文档
+│   ├── agents/                  # Agent使用文档
+│   ├── squads/                  # Squad配置文档
+│   └── workflows/               # 工作流文档
+├── research/                    # 共享调研资料
+│   ├── idea_analysis/           # 9个idea的对比分析
+│   └── video_analysis/          # AI创业视频分析
+├── meetings/                    # 会议纪要
+└── shared/                      # 共享代码配置
+
+# 每个idea有独立的repo：
+# Candlend/ai-job-advisor
+# Candlend/weight-loss-ai
+# Candlend/video-editing-ai
+# Candlend/vocal-coach-ai
+# Candlend/pet-health-ai
 ```
 
----
+## 🚀 快速开始
 
-## 🔄 更新日志
+### 查看项目进度
+访问 [Multica Workspace](https://multica.ai/workspace) 查看所有项目的实时进度。
 
-### 2026-06-02
-- ✅ 完成4个方向的深度调研
-- ✅ 补充可实现路径（工具、平台、开源项目、合规化）
-- ✅ 创建综合对比分析报告
-- ✅ 整理文档结构
+### 参与开发
+1. Clone对应项目的repo
+2. 查看该项目的README了解当前状态
+3. 在Multica中查看分配给你的issues
 
-### 2026-05-29
-- ✅ 项目启动会议
-- ✅ 确定三个核心调研方向
+### 添加新Idea
+1. 创建新的private GitHub repo
+2. 在Multica中创建新project
+3. 添加project resource指向GitHub repo
+4. 创建Amazing Prototype研究计划issue
 
----
+## 📚 文档资源
+
+### 核心文档
+- **[综合对比分析报告](research/idea_analysis/00-综合对比与优先级排序.md)** - 9个idea的详细对比
+- **[CLAUDE.md](CLAUDE.md)** - Agent工作机制和全局规则
+
+### 调研资料
+- [9个软件创业Idea深度分析](research/idea_analysis/20260602_九个软件创业Idea深度分析报告.md)
+- [AI创业视频综合分析](research/video_analysis/AI创业视频综合分析报告.md)
+
+### 会议纪要
+- [20260602 会议纪要](meetings/20260602_summary.md)
+- [20260529 会议纪要](meetings/20260529_summary.md)
+
+## 👥 团队组织
+
+### Squads
+- **产品小队**：产品规划、市场分析、技术决策
+- **开发小队**：架构设计、代码实现、UI设计
+- **上线小队**：部署上线、质量保证、文档维护
+
+### Agents
+- CEO：全局战略决策、项目审核、资源调度
+- 产品经理：产品规划和需求管理
+- 技术架构师：技术方案设计
+- UI设计师：界面设计和用户体验
+- 质量工程师：测试和质量保证
+- 市场调研分析师：市场调研和数据分析
+- ...（更多agent见Multica workspace）
+
+## 📋 工作流程
+
+### 全局机制：AI与人类任务并行执行
+- **AI任务**：立即开始，不等待人类
+- **人类任务**：并行进行，用于验证和优化
+- **模拟数据使用**：AI可以用模拟数据先行，等真实数据出来后再迭代
+- **文档最小化**：机制内置在agent指令里，避免冗余文档
+
+详见 [CLAUDE.md](CLAUDE.md) 中的全局机制说明。
+
+### 文件管理规则
+1. **代码项目** → 必须放在对应idea的GitHub repo
+2. **单个idea专属文档** → 放该idea的repo的`docs/`目录
+3. **workspace共享文档** → 放本repo（ai_entrepreneur）
+4. **临时讨论/附件** → 使用`multica issue comment add --attachment`
+5. **严禁引用本地路径**（如`C:\...`, `file:///`）
+
+## 🔄 最近更新
+
+### 2026-06-13
+- ✅ 完成workspace重构
+- ✅ 创建5个独立GitHub repos
+- ✅ 创建5个独立Multica projects
+- ✅ 迁移所有issues到对应项目
+- ✅ 清理autopilot临时issues
+
+### 2026-06-12
+- ✅ 建立AI与人类任务并行执行机制
+- ✅ 减肥健康管理应用 Landing Page上线
+
+### 2026-06-10
+- ✅ 启动Amazing Prototype研究计划
+- ✅ 9个idea深度分析完成
+
+## 🎯 当前优先级
+
+### P0（紧急）
+- [CAN-67] Workspace重构执行
+
+### P1（高优先级）
+- AI求职顾问 - 用户访谈与付费意愿测试
+- 减肥健康管理应用 - MVP开发
+- 宠物健康管理 - 手动服务验证
+
+### P2（中优先级）
+- AI声乐指导 - 用户需求验证
+- 全自动视频剪辑工具 - 市场调研
 
 ## 📞 联系方式
 
-参考会议纪要中的团队成员信息。
+- **Workspace Owner**: candlend@outlook.com
+- **Multica Workspace**: https://multica.ai/workspace
 
 ---
 
 **记住：行动 > 完美计划。选择一个方向，立即开始！**
+
+**项目启动日期**：2026年5月29日  
+**最后更新**：2026年6月13日
